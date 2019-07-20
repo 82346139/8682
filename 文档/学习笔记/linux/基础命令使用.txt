@@ -156,3 +156,21 @@ name=aa
 baseurl=ftp://192.168.1.1/centos6.5
 enabled=1
 gpgcheck=0
+
+-----------------------------------------------------------------------------------
+1 - 在启动grub菜单，选择编辑选项启动
+2 - 按键盘e键，来进入编辑界面
+3 - 找到Linux 16的那一行，将ro改为rw init=/sysroot/bin/sh
+4 - 现在按下 Control+x ，使用单用户模式启动
+5 - 现在，可以使用下面的命令访问系统
+chroot /sysroot
+6 - 重置密码
+passwd root
+7 - 更新系统信息
+touch /.autorelabel
+8 - 退出chroot
+exit
+9 - 重启你的系统
+reboot
+
+三流之路
