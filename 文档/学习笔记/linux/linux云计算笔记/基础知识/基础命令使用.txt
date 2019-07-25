@@ -937,6 +937,58 @@ i=install 安装
 v=verbose 提示
 h=hash 进度条
 查询 yum 服务器是否有需要安装的软件
+//////////////////////////////////////////////////////////////////////////////////////
+一，手工命令安装
+	安装：	rpm -ivh 包全名 
+	升级：	rpm -Uvh 包全名
+	卸载：	rpm -e   包名
+	查询：
+		  1)查询是否安装				rpm -q 包名
+										rpm -qa |grep 包名
+		  2)查询包信息					rpm -qi 包名
+										rpm -qip 包全名（没有安装的软件包信息）
+		  3）查询安装位置				rpm -ql 包名
+										rpm -qlp 包全名（没有安装的软件包信息）
+		  4）查询系统文件属于哪个包		rpm -qf 系统文件名
+		  5）查询依赖性					rpm -qR 包名
+	验证：	rpm -v 
+	导入数字证书： rpm --import
+	提取rpm包中文件：
+	rpm2cpio httpd-2.4.6-67.el7.centos.x86_64.rpm | cpio -idv ./etc/httpd/conf/httpd.conf
+
+提取 RPM 包中文件
+[root@localhost ~]# rpm2cpio 包全名 | cpio -idv .文件绝对路径
+rpm2cpio 将 rpm 包转换为 cpio 格式的命令
+cpio 是一个标准工具，它用于创建软件档案文件和从档案文件中提取文件
+举个例子，现在我假设把系统中的/bin/ls 命令不小心误删除了，那么我可以修复回来吗？这时有两
+种方法修复，要不就是使用—force 选项覆盖安装一遍 coreutils-8.4-19.el6.i686 包，要不就可以
+使用 cpio 命令提取出/bin/ls 命令文件，再把它拷贝到对应位置就可以了。不过我是怎么知道/bin/ls
+命令是属于 coreutils-8.4-19.el6.i686 这个软件包的呢？还记得-qf 选项吗？命令如下：
+[root@localhost ~]# rpm -qf /bin/ls
+coreutils-8.4-19.el6.i686
+#查看 ls 文件属于哪个软件包
+那么我们在讲 RPM 包中文件提取，所以我们使用第二章方法，cpio 命令提取出 ls 命令文件，然
+后拷贝到对应位置，命令如下：
+[root@localhost ~]# mv /bin/ls /root/
+#把/bin/ls 命令移动到/root 目录下，造成误删除的假象
+[root@localhost ~]# ls
+-bash: ls: command not found
+#这时执行 ls 命令，系统会报错“命令没有找到”
+[root@localhost ~]# rpm2cpio /mnt/cdrom/Packages/coreutils-8.4-19.el6.i686.rpm | cpio
+-idv ./bin/ls
+./bin/ls
+24772 块
+#提取 ls 命令文件到当前目录下
+[root@localhost ~]# cp /root/bin/ls /bin/
+#把提取出来的 ls 命令文件复制到/bin 目录下
+[root@localhost ~]# ls
+anaconda-ks.cfg bin inittab install.log install.log.syslog ls
+#恭喜你，ls 命令又可以正常使用了
+////////////////////////////////////////////////////////////////////////////////////////
+源码包报错
+1》安装过程必须停止
+2》是否出现no，warning，error
+
 
 [yum].repo
 yum list|grep xx 软件列表
@@ -947,6 +999,20 @@ name=aa
 baseurl=ftp://192.168.1.1/centos6.5
 enabled=1
 gpgcheck=0
+
+		yum在线安装：
+				yum -y install 包名		安装
+				yum -y update  包名		升级
+				yum    list				查询F
+
+				yum -y remove	包名	卸载
+				yum    grouplist 		查询组
+				yum groupsearch 关键件	搜索
+				yum -y groupinstall 包组名  安装
+				yum -y groupremove	包组名	卸载
+	
+	
+	links 命令行显示连接
 -------------------------------------------------------------------------------------------------
 crontab 定时任务
 -e 编辑crontab编辑定时任务
