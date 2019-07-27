@@ -1,4 +1,5 @@
 									一，更改用户到期时间
+[root@localhost ~]# chage -d 0 user1
 1)/etc/default/useradd
 [root@localhost ~]# vi /etc/default/useradd
 # useradd defaults file
@@ -32,3 +33,32 @@ CREATE_MAIL_SPOOL=yes   （给每一个新建用户创建邮箱）
  CREATE_MAIL_SPOOL=yes
 这个选项定义是否给新建用户建立邮箱，默认是创建，也就是说所有的新建用户系统都会新建一
 个邮箱，放在/var/spool/mail/下和用户名相同。
+
+
+检测 SetUID 的脚本
+[root@localhost ~]# vi suidcheck.sh
+#!/bin/bash
+# Author: shenchao （E-mail: shenchao@atguigu.com）
+find / -perm -4000 -o -perm -2000 > /tmp/setuid.check
+#搜索系统中所有拥有 SUID 和 SGID 的文件，并保存到临时目录中。
+for i in $(cat /tmp/setuid.check)
+#做循环，每次循环取出临时文件中的文件名
+do
+ grep $i /root/suid.list > /dev/null
+#比对这个文件名是否在模板文件中
+ if [ "$?" != "0" ]
+#如果在，不报错
+ then
+ echo "$i isn't in listfile! " >> /root/suid_log_$(date +%F)
+#如果文件名不再模板文件中，则报错。并把报错报错到日志中
+ fi
+done
+rm -rf /tmp/setuid.check
+#删除临时文件
+[root@localhost ~]# chmod u+s /bin/vi
+#手工给 vi 加入 SUID 权限
+[root@localhost ~]# ./suidcheck.sh
+#执行检测脚本
+[root@localhost ~]# cat suid_log_2013-01-20
+/bin/vi isn't in listfile!
+#报错了，vi 不再模板文件中。代表 vi 被修改了 SUID 权限
