@@ -474,3 +474,17 @@ Swap: 2047992 0 2047992
 /dev/sdb1 swap swap defaults 0 0
 #加入新 swap 分区的相关内容，我这里是直接使用的分区的设备文件名，大家当然也可以
 #使用 UUID 号了。
+*******************************************************************************
+ 扩展空间而无需重启虚拟机
+
+现在运行如下命令，通过重新扫描 SCSI （注：Small Computer System Interface 小型计算机系统接口）总线并添加 SCSI 设备，系统就可以扩展操作系统的物理卷磁盘空间，而且不需要重启虚拟机。
+
+# ls /sys/class/scsi_host/
+# echo "- - -" > /sys/class/scsi_host/host0/scan
+# echo "- - -" > /sys/class/scsi_host/host1/scan
+# echo "- - -" > /sys/class/scsi_host/host2/scan
+使用下面的命令来检查 SCSI 设备的名称，然后重新扫描 SCSI 总线。
+
+# ls /sys/class/scsi_device/
+# echo 1 > /sys/class/scsi_device/0\:0\:0\:0/device/rescan
+# echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan
