@@ -4,6 +4,12 @@
 	远程终端		 pst/0-255
 	 whoami 命令用于显示自身用户名称
 	 /etc/udev/rules.d/70-persistent-net.rules  无法获取IP直接把他给删了
+	 enenforce 
+selinux
+setenforce 0  零时关闭
+vim /etc/selinux/config 
+Disabled
+永久关闭
 -------------------------------------------------------------------------------------------------
 echo $LANG 显示本机字符编码
 LANG=zh_CN.UTF-8 更改字符编码
