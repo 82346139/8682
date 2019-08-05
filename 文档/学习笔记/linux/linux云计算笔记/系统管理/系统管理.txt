@@ -304,11 +304,25 @@ pkill 命令和 killall 命令非常类似，也是按照进程名来杀死进�
 [root@localhost ~]# pkill -9 -t pts/1
 #强制杀死从 pts/1 虚拟终端登录的进程
 
+kill -HUP 平滑重启，当访问全部结束后在重启
+kill -HUP pid 
+    其中 pid 是进程标识。如果想要更改配置而不需停止并重新启动服务，则使用该命令。在对配置文件作必要的更改后，发出该命令以动态更新服务配置。
 
+示例：
 
+   重启Nginx：
 
+   # kill -HUP `cat /app/nginx/nginx.pid`
+   
+  重启httpd服务：
 
+   # ps -A | grep httpd | grep -v grep | awk ‘{ print $1}‘ | xargs -L 1 kill -HUP  
+   ps 和 grep 命令用来在所有的进程中搜索 httpd（并且忽略用来搜索 httpd 进程的 grep 进程）。接下来，awk 只显示输出结果中的进程 ID，并将它传递给 xargs。然后，xargs 命令接受每个进程 ID（因为使用了 -L 1 以便一次提取一行内容），并使用kill -HUP 向相应的进程发送一个挂起信号。
 
+  在如：重启sshd服务
+  
+  更改/etc/ssh/sshd_config，将里面的Port改为新端口，比如28，然后 kill -HUP `cat /var/run/sshd.pid` 就行了。 
+现有连接自己不会断，因为kill -HUP `cat /var/run/sshd.pid` 只是HUP监听的那个，已经建立的连接（不同的 pid）不会断。 然后你在现有账号下面exit，在用新的端口登陆就可以了。
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 二、工作管理
