@@ -3,7 +3,6 @@
 2、shell 的分类
 Shell 类别 易学性 可移植性 编辑性 快捷性
 Bourne Shell (sh) 容易 好 较差 较差
-Korn Shell (ksh) 较难 较好 好 较好
 Bourne Again (Bash) 难 较好 好 好 ******
 POSIX Shell (psh) 较难 好 好 较好
 C Shell (csh) 较难 差 较好 较好
@@ -269,10 +268,6 @@ ctrl+Q 恢复屏幕输出。
 
 [root@localhost ac]# ls && echo ok || echo no   两个结合使用
 ok
-[root@localhost ac]# lssss && echo ok || echo no
--bash: lssss: 未找到命令
-no
-[root@localhost ac]# 
 
 [root@localhost ac]# netstat -antp | grep httpd  || systemctl restart httpd && netstat -antp | grep 80 
 [root@localhost ac]# netstat -antp | grep httpd  || systemctl restart httpd || yum -y install httpd
@@ -307,8 +302,7 @@ no
 #查找不含有“/bin/bash”的行，其实就是列出所有的伪用户
 ****************************************************************
 2）find 和 grep 的区别
-find 命令是在系统当中搜索符合条件的文件名，如果需要模糊查询，使用通配符（通配符我们下
-一小节进行介绍）进行匹配，搜索时文件名是完全匹配。
+find 命令是在系统当中搜索符合条件的文件名，如果需要模糊查询，使用通配符进行匹配，搜索时文件名是完全匹配。
 [root@localhost ~]# touch abc
 #建立文件 abc
 [root@localhost ~]# touch abcd

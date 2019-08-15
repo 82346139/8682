@@ -9,6 +9,8 @@ ln -fs /lib/systemd/system/graphical.target /etc/systemd/system/default.target
 重启启动Xshell生效
 如果打开Firefox乱码安装：
 yum -y groupinstall Fonts 字体库
+
+systemctl reloab httpd  加载配置文件
 ---------------------------------------------------------------------
 rpm -ivh lrzsz-0.12.20-36.el7.x86_64.rpm  xshell上传下载工具
 rz下载  *************************************************

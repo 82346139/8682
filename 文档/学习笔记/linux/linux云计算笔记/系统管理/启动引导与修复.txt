@@ -186,8 +186,6 @@ EOF
 
 3.修改root密码
 (1) 重启系统，按e进入编辑模式
-	在 linux16 那一行的末尾加上以下信息
-	rd.break console=tty0
 	1 - 在启动grub菜单，选择编辑选项启动
 	2 - 按键盘e键，来进入编辑界面
 	3 - 找到Linux 16的那一行，将ro改为rw init=/sysroot/bin/sh

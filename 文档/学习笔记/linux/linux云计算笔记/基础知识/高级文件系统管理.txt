@@ -453,4 +453,19 @@ lost+found testd testf
 我们删除 userlv 这个逻辑卷，记得删除时要先卸载。命令如下：
 [root@localhost ~]# umount /dev/scvg/userlv 
 [root@localhost ~]# lvremove /dev/scvg/userlv 
-更多云计算-Java –大数据 –前端 –python 人工智能资料下载，可百度访问：尚硅谷官网
+
+********************************************************************************************
+Linux服务器不关机新增硬盘的方法
+在开机状态下，插入磁盘之后，执行如下命令：
+(亲测可行！！！！！)
+ ls /sys/class/scsi_host/
+host0 host1 host2
+
+echo "- - -" > /sys/class/scsi_host/host0/scan
+
+echo "- - -" > /sys/class/scsi_host/host1/scan
+
+echo "- - -" > /sys/class/scsi_host/host2/scan
+
+查看步骤1的命令是否生效，可以在/var/log/messages中进行验证
+执行fdisk -l命令看是否能看到新增的磁盘，如果看不到，可以把上面的host0换成host1或者host2等再试一次

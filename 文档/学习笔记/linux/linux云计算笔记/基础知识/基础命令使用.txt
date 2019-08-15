@@ -10,6 +10,56 @@ setenforce 0  零时关闭
 vim /etc/selinux/config 
 Disabled
 永久关闭
+
+写路由表
+不同IP之间可以ping通
+vim /etc/sysctl.conf 
+最后添加  net.ipv4.ip_forward = 1（开启路由转发）
+route add -net 192.168.3.0/24 ens32（写路由表）
+
+read5磁盘阵列安装方法
+	查看 mdadm 工具是否安装
+	[root@localhost ~]# rpm -qa | grep mdadm
+	mdadm-3.3.2-7.el7.x86_64
+	3）查看 linux 可用磁盘
+	[root@localhost ~]# fdisk –l
+	4）开始给磁盘进行分区
+	[root@localhost ~]# fdisk /dev/sdb 
+	[root@localhost ~]#fdisk /dev/sdc 
+	[root@localhost ~]#fdisk /dev/sdd 
+	[root@localhost ~]#fdisk /dev/sde
+	并给他们的分区设置成fd格式
+	5）过滤查看
+	[root@localhost ~]# fdisk -l | grep '/dev'
+	6）创建 RAID5 使用命令
+	[root@localhost ~]#mdadm -Cv /dev/md5 -a yes -n4 -l5 /dev/sd[bcde]1
+	参数解释：
+	(1)大写 C: 相当于 create v 把创建位置信息显示出来
+	(2)/dev/md5: 创建 RAID5 的名称
+	(3)-a: 后面跟 yes 代表如果有什么设备文件存在的话自动创建
+	(4)-n4: 小写 n 创建 RAID 用了几块硬盘
+	(5)-l: RAID 的级别 5
+	(6)/dev/sdb1、/dev/sdc1、/dev/sdd1、/dev/sde1:四块磁盘分区
+	7）查看 RAID5 是否存在
+	[root@localhost ~]# ls -l /dev/md5
+	[root@localhost ~]# cat /proc/mdstat  
+	这个文件包含了由md 设备驱动程序控制的RAID 设备信息。
+	8）开始建立文件系统需要先格式化
+	[root@localhost ~]# mkfs -t ext4 /dev/md5
+	9）建立文件系统 进行挂载
+	[root@localhost /]# mkdir /raidme
+	[root@localhost /]# mount /dev/md5 /raidme/
+	[root@localhost /]# df -hT
+	或者进行自动挂载
+	[root@localhost /]# vim /etc/fstab
+	挂载成功  证明raid5构建成功
+
+
+	which 查看命令安装位置
+		[root@bogon ~]# which ls
+alias ls='ls --color=auto'
+	/usr/bin/ls
+
 -------------------------------------------------------------------------------------------------
 echo $LANG 显示本机字符编码
 LANG=zh_CN.UTF-8 更改字符编码
@@ -65,6 +115,10 @@ linux 所有存储设备都必须挂载使用，包括硬盘
 -L 卷标名： 挂载指定卷标的分区，而不是安装设备文件名挂载
 -o 特殊选项： 可以指定挂载的额外选项，比如读写权限、同步异步等，如果不指定
 则默认值生效。具体的特殊选项，见表 9-4：
+将 /dev/hda1 用唯读模式挂在 /mnt 之下。#mount -o ro /dev/hda1 /mnt
+
+
+
 
 参数 说明
 atime/noatime 更新访问时间/不更新访问时间。访问分区文件时，是否更新文件的访问时
@@ -596,6 +650,33 @@ grep 的作用是在文件中提取和匹配符合条件的字符串行。命令
  -n： 输出行号
 -v： 反向查找
 --color=auto: 搜索出的关键字用颜色显示
+
+grep -e 只能传递一个检索内容   
+grep -e pattern1 -e pattern2 filename
+例如：
+
+$ grep -e Tech -e Sales employee.txt  
+100  Thomas  Manager    Sales       $5,000  
+200  Jason   Developer  Technology  $5,500  
+300  Raj     Sysadmin   Technology  $7,000  
+500  Randy   Manager    Sales       $6,000 
+2.grep -E 可以传递多个内容 ，使用 | 来分割多个pattern，以此实现OR操作
+
+grep -E 'pattern1|pattern2' filenam
+ 
+例如：
+
+$ grep -E 'Tech|Sales' employee.txt  
+100  Thomas  Manager    Sales       $5,000  
+200  Jason   Developer  Technology  $5,500  
+300  Raj     Sysadmin   Technology  $7,000  
+500  Randy   Manager    Sales       $6,000
+
+grep "root" /etc/passwd (找包含root的行)
+grep -v "root" /etc/passwd | grep "bin/bash" (找普通用户)
+
+--------------------- 
+
 find 也是搜索命令，那么 find 命令和 grep 命令有什么区别呢？
 1）find 命令
 find 命令用于在系统中搜索符合条件的文件名，如果需要模糊查询，则使用通配符进行匹配，通配符
