@@ -85,6 +85,7 @@ useradd 选项 用户名
 -c 说明 添加说明
 -d 目录 手工指定家目录，目录不需要事先建立
 -s shell /bin/bash.
+-M 　不要自动建立用户的登入目录
 例如：
 [root@localhost ~]# groupadd lamp1
 #先手工添加 lamp1 用户组，因为我一会要把 lamp1 用户的初始组指定过来，如果不事先建立，会报错用户组不存在

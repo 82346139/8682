@@ -1,0 +1,102 @@
+which （查看服务装在哪）
+Linux中su、su -和sudo的区别
+su 切换到root用户，但是并没有转到root用户家目录下，即没有改变用户的环境。
+
+su - 切换到root用户，并转到root用户的家目录下，即改变到了root用户的环境。
+
+这个涉及到不同用户下的环境变量的配置。
+*************************************************************************************************
+nmcli
+配置聚合链路 在 system1.rhce.cc 和 system2.rhce.cc 之间按以下要求配置一个链路： 此链路使用接口 eth1 和 eth2 此链路在一个接口失效时仍然能工作 此链路在 system1 使用下面的地址 172.16.11.25/255.255.255.0 此链路在 system2 使用下面的地址 172.16.11.35/255.255.255.0 此链路在系统重启之后依然保持正常状态
+答：由于练习环境限制，所以这个实验在另外的环境中练习即可。
+以下为在system1中操作过程：
+[root@system1 ~]# nmcli connection add type team con-name team0 ifname team0 config '{”runner”:{"name":"activebackup"}}'
+Connection 'team0' (439550d0-f0bf-4a6a-b639-26f86bf5421c) successfully added.
+[root@system1 ~]# nmcli connection modify team0 ipv4.addresses "172.16.11.25/24" 
+[root@system1 ~]# nmcli connection modify team0 ipv4.method manual
+[root@system1 ~]# nmcli connection add type team-slave con-name team0-1 ifname eth1 master team0
+Connection 'team0-1' (d5786521-378a-4b15-b2ea-2dcf5c94689c) successfully added.
+[root@system1 ~]# nmcli connection add type team-slave con-name team0-2 ifname eth2 master team0
+Connection 'team0-2' (afc02e37-448a-4dde-8d94-65c62f9b9ba3) successfully added.
+以下三个文件中注意这两点
+BOOTPROTO=none  
+ONBOOT=yes
+[root@system1 network-scripts]# vim ifcfg-team0
+[root@system1 network-scripts]# vim ifcfg-team0-1
+[root@system1 network-scripts]# vim ifcfg-team0-2
+[root@system1 network-scripts]# systemctl restart network
+
+system2上的操作为:
+[root@system1 ~]# nmcli connection add type team con-name team0 ifname team0 config '{runner}:{"name":"activebackup"}}'
+Connection 'team0' (439550d0-f0bf-4a6a-b639-26f86bf5421c) successfully added.
+[root@system1 ~]# nmcli connection modify team0 ipv4.addresses "172.16.11.35/24" 
+[root@system1 ~]# nmcli connection modify team0 ipv4.method manual
+[root@system1 ~]# nmcli connection add type team-slave con-name team0-1 ifname eth1 master team0
+Connection 'team0-1' (d5786521-378a-4b15-b2ea-2dcf5c94689c) successfully added.
+[root@system1 ~]# nmcli connection add type team-slave con-name team0-2 ifname eth2 master team0
+Connection 'team0-2' (afc02e37-448a-4dde-8d94-65c62f9b9ba3) successfully added.
+以下三个文件中注意这两点
+BOOTPROTO=none  
+ONBOOT=yes
+[root@system1 network-scripts]# vim ifcfg-team0
+[root@system1 network-scripts]# vim ifcfg-team0-1
+[root@system1 network-scripts]# vim ifcfg-team0-2
+[root@system1 network-scripts]# systemctl restart network
+在另外的RHEL7的系统上，通过VMware添加网卡，进行模拟练习。
+能ping通对方指定IP即可。
+
+6.配置 IPv6 地址 在您的考试系统上配置接口 eth0 使用下列 IPv6 地址： system1 上的地址应该是 200e:ac18::e0a/64 system2 上的地址应该是 200e:ac18::e14/64 两个系统必须能与网络 200e:ac18/64 内的系统通信。 地址必须在重启后依旧生效。 两个系统必须保持当前的 IPv4 地址并能通信。
+答：
+[root@system1 network-scripts]# nmcli connection modify eth0 ipv6.addresses "200e:ac18::e0a/64"
+[root@system1 network-scripts]# nmcli connection modify eth0 ipv6.method manual
+IPv6的地址要按照题目的要求写。然后在把类型修改为manual
+在system2中
+[root@system2 ~]# nmcli connection modify eth0 ipv6.addresses "200e:ac18::e14/64"
+[root@system2 ~]# nmcli connection modify eth0 ipv6.method manual
+
+[root@system1 ~]# systemctl restart network
+ [root@system1 ~]# ping6 200e:ac18::e14
+
+
+***************************************************************************************
+[root@localhost 桌面]# ifconfig eno16777736:1 192.168.1.113 up (不添加网卡的情况下添加第二个IP信息)
+
+
+sentos7 防火墙使用：
+
+firewalld的基本使用
+启动： systemctl start firewalld
+关闭： systemctl stop firewalld
+查看状态： systemctl status firewalld 
+开机禁用  ： systemctl disable firewalld
+开机启用  ： systemctl enable firewalld
+2.systemctl是CentOS7的服务管理工具中主要的工具，它融合之前service和chkconfig的功能于一体。
+启动一个服务：systemctl start firewalld.service
+关闭一个服务：systemctl stop firewalld.service
+重启一个服务：systemctl restart firewalld.service
+显示一个服务的状态：systemctl status firewalld.service
+在开机时启用一个服务：systemctl enable firewalld.service
+在开机时禁用一个服务：systemctl disable firewalld.service
+查看服务是否开机启动：systemctl is-enabled firewalld.service
+查看已启动的服务列表：systemctl list-unit-files|grep enabled
+查看启动失败的服务列表：systemctl --failed
+3.配置firewalld-cmd
+查看版本： firewall-cmd --version
+查看帮助： firewall-cmd --help
+显示状态： firewall-cmd --state
+查看所有打开的端口： firewall-cmd --zone=public --list-ports
+更新防火墙规则： firewall-cmd --reload
+查看区域信息:  firewall-cmd --get-active-zones
+查看指定接口所属区域： firewall-cmd --get-zone-of-interface=eth0
+拒绝所有包：firewall-cmd --panic-on
+取消拒绝状态： firewall-cmd --panic-off
+查看是否拒绝： firewall-cmd --query-panic
+开启一个端口
+添加
+firewall-cmd --zone=public --add-port=80/tcp --permanent    （--permanent永久生效，没有此参数重启后失效）
+重新载入
+firewall-cmd --reload
+查看
+firewall-cmd --zone= public --query-port=80/tcp
+删除
+firewall-cmd --zone= public --remove-port=80/tcp --permanent

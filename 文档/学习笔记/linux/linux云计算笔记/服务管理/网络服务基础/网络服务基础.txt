@@ -1,0 +1,159 @@
+									CentOS 6.x/7.x 对比
+CentOS 6.x
+时间同步：ntpq -p
+修改时区：/etc/sysconfig/clock
+修改语言：/etc/sysconfig/i18n
+
+CentOS 7.x
+时间同步：chronyc sources
+修改时区：timedatectl set-timezone Asia/Shanghai
+修改语言：localectl set-locale LANG=zh_CN.UTF-8
+localectl (查看语系)
+
+主机名
+CentOS 6.x的配置文件为/etc/sysconfig/network（永久设置）
+CentOS 7.x的配置文件为/etc/hostname（永久设置）
+CentOS 7.x还可以使用命令永久设置
+[root@localhost ~]# hostnamectl set-hostname atguigu.com 
+
+
+CentOS 6.x/7.x 对比 – 网络服务管理
+操作行为 					CentOS 6.x 					CentOS 7.x
+启动指定服务 			service 服务名 start 		systemctl start 服务名
+关闭指定服务 			service 服务名 stop 		systemctl stop 服务名
+重启指定服务 			service 服务名 restart 		systemctl restart 服务名
+查看指定服务状态 		service 服务名 status 		systemctl status 服务名
+查看所有服务状态 		service --status-all 		systemctl list-units
+设置服务自启动 			chkconfig 服务名 on 		systemctl enable 服务名
+设置服务不自启动 		chkconfig 服务名 off 		systemctl disable 服务名
+查看所有服务自启动状态 	chkconfig --list 			systemctl list-unit-files
+
+*************************************************************************************
+
+CentOS 6.x/7.x 对比 – 网络设置
+网卡名
+CentOS 6.x网卡名是：eth0 			CentOS 7.x网卡名是：ens33
+网络配置命令
+CentOS 6.x中：ifconfig/setup 		CentOS 7.x中：ip/nmtui
+
+网络服务
+CentOS 6.x默认使用 network 服务
+CentOS 7.x默认使用 NetworkManager 服务(network作为备用)
+网卡配置文件
+配置文件目录：/etc/sysconfig/network-scripts/ifcfg-ens33
+配置管理命令：ifconfig/ip address show
+配置文件内容：
+	DEVICE=ens33 #设备名称
+	NAME=ens33 #网卡名称
+	BOOTPROTO=static #连接方式（dhcp/static）
+	ONBOOT=yes #是否开机加载
+	IPADDR=192.168.12.250 #IP地址
+	NETMASK=255.255.255.0 #子网掩码（PREFIX=24）
+	GATEWAY=192.168.12.1 #网关
+	DNS1=8.8.8.8 #DNS
+注意：网卡配置文件内，选项要大写，小写不报错，但不生效，参数可小写
+
+//IP地址配置-CentOS 7 修改网卡名
+	➢ 修改网卡配置文件名（建议将原配置文件备份）
+		cp -a ifcfg-ens33 ifcfg-eth0
+	➢ 修改网卡配置文件内容
+		NAME=eth0
+		DEVICE=eth0
+	➢ 修改grub配置文件
+		vi /etc/default/grub
+		GRUB_CMDLINE_LINUX=“
+	crashkernel=auto rhgb quiet net.ifnames=0 biosdevname=0“
+	#在指定位置新增红色参数，关闭一致性命名规则
+	➢ 更新grub配置文件，并加载新的参数
+		grub2-mkconfig -o /boot/grub2/grub.cfg
+	➢ 重启操作系统
+		reboot
+		
+TCP/IP五层常见协议
+应用层协议： FTP、HTTP、SMTP、Telnet、DNS等
+传输层协议： TCP、UDP等
+网络层协议： IP、ICMP、ARP等
+数据链路层协议： PPP协议等
+物理层： 不常用
+
+常见网络端口
+
+端口配置文件：/etc/service
+	20/21 		ftp服务 				文件共享
+	22 			ssh服务 			安全远程管理
+	23 			telnet服务 			不安全远程管理
+	25			smtp：				简单邮件传输协议 发信
+	465 		smtp(ssl) 				发信
+	110 		pop3：邮局协议 			收信
+	143 		imap4 					收信
+	993 		imap4(ssl) 				收信
+	80 			www服务（http://） 		网页访问
+	443 		www服务（https://） 加密网页访问
+	3306 		mysql端口 			数据库连接端口
+	53 			DNS端口 			域名解析端口
+	
+	
+网关和路由设置	
+	route -n 查看系统中的路由表信息
+	临时：
+	网关：
+	添加：route add default gw ip
+	删除：route del default gw ip
+	永久：
+	网关：
+	/etc/sysconfig/network-scripts/ifcfg-eth0
+	添加永久路由(需要重启网络) 
+编辑或新建/etc/sysconfig/network-scripts/route-interface 文件中，比如 
+	vi /etc/sysconfig/network-scripts/route-eth0 
+添加两条路由： 
+	172.22.2.0/24 via 172.22.3.254 dev eth0 
+	172.21.0.0/16 via 172.22.3.254 dev eth0
+
+********************************************************************************************
+
+Linux下网络管理命令
+DNS配置命令
+nslookup：域名解析测试命令
+	配置文件：
+	局部：/etc/sysconfig/network-scripts/ifcfg-eth0
+	DNS=ip
+	全局：/etc/resolv.conf
+	nameserver ip
+	相关配置文件：/etc/hosts
+网络查看命令
+netstat查看系统的网络连接状态、路由信息、接口等
+	常用选项：
+	-a：显示所有活动连接
+	-n：以数字形式显示
+	-t：查看TCP协议相关信息
+	-u：查看UDP协议相关信息
+	-p：显示PID和进程名
+	-l：监听
+网络查看命令
+traceroute：测试从当前主机到目的主机之间经过的网络节点数，用于追
+踪数据包在网络上传输时的全部路径，它默认发送的数据包大小是40字节，
+默认使用ICMP协议
+常用选项:
+	-p 使用UDP端口进行测试，默认端口为33434
+	-q 3 指定测试时发送的  数据包个数（即测试次数）
+	-n 以IP的方式进行连接测试，避开DNS的解析
+注意：该命令在使用NAT模式时无法实现效果，请切换桥接模式（官方回复）
+
+连通测试命令
+ping：测试网络连通性
+常见选项：
+	-i 指定间隔时间
+	-c 指定ping的次数
+地址解析命令
+	arp：地址解析协议，将ip地址解析成MAC地址
+	常见选项：
+	-a 查看所有
+	-d ip地址，删除某条ARP记录
+网络探测命令
+	nmap：网络探测扫描命令 #此命令默认未安装
+	-sP 探测某网段内有哪些主机是存活的
+	-sT 探测某主机上开启了哪些TCP端口
+远程连接工具
+	Windows → Linux： Xshell、SecureCRT等
+	Linux → Windwos： rdesktop命令（图形界面）
+	Linux → Linux： ssh命令
